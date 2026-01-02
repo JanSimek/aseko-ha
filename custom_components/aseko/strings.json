@@ -1,0 +1,72 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Aseko Pool",
+        "description": "Enter your Aseko API key. You can get one from https://account.aseko.cloud/profile/settings/api-keys",
+        "data": {
+          "api_key": "API Key"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate Aseko Pool",
+        "description": "Your API key has expired or is invalid. Please enter a new API key.",
+        "data": {
+          "api_key": "API Key"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Aseko API",
+      "invalid_auth": "Invalid API key",
+      "account_mismatch": "This API key belongs to a different account",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "Account is already configured",
+      "reauth_successful": "Re-authentication successful"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "water_temperature": {
+        "name": "Water temperature"
+      },
+      "air_temperature": {
+        "name": "Air temperature"
+      },
+      "ph": {
+        "name": "pH"
+      },
+      "redox": {
+        "name": "Redox"
+      },
+      "cl_free": {
+        "name": "Free chlorine"
+      },
+      "salinity": {
+        "name": "Salinity"
+      },
+      "electrolyzer": {
+        "name": "Electrolyzer"
+      },
+      "dose": {
+        "name": "Dose"
+      }
+    },
+    "binary_sensor": {
+      "online": {
+        "name": "Online"
+      },
+      "has_warning": {
+        "name": "Warning"
+      },
+      "water_flow_to_probes": {
+        "name": "Water flow to probes"
+      },
+      "heating": {
+        "name": "Heating"
+      }
+    }
+  }
+}

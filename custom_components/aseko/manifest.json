@@ -1,0 +1,12 @@
+{
+  "domain": "aseko",
+  "name": "Aseko Pool",
+  "codeowners": ["@jsimek"],
+  "config_flow": true,
+  "documentation": "https://github.com/jsimek/aseko-ha",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/jsimek/aseko-ha/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}
