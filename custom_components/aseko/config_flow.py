@@ -37,10 +37,6 @@ class AsekoConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    def __init__(self) -> None:
-        """Initialize the config flow."""
-        self._reauth_entry_id: str | None = None
-
     async def _validate_api_key(
         self, api_key: str
     ) -> tuple[str | None, dict[str, str]]:
@@ -113,7 +109,6 @@ class AsekoConfigFlow(ConfigFlow, domain=DOMAIN):
         self, entry_data: Mapping[str, Any]
     ) -> ConfigFlowResult:
         """Handle reauth when API key expires."""
-        self._reauth_entry_id = self.context.get("entry_id")
         return await self.async_step_reauth_confirm()
 
     async def async_step_reauth_confirm(
@@ -129,7 +124,7 @@ class AsekoConfigFlow(ConfigFlow, domain=DOMAIN):
             if unique_id and not errors:
                 # Get the existing entry
                 reauth_entry = self.hass.config_entries.async_get_entry(
-                    self._reauth_entry_id
+                    self.context.get("entry_id")
                 )
                 if not reauth_entry:
                     errors["base"] = "unknown"
