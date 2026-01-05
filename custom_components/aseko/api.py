@@ -41,6 +41,7 @@ class AsekoUnit:
     has_warning: bool
     brand_name: str | None
     status_values: dict[str, Any]
+    status_messages: list[dict[str, Any]]
 
 
 class AsekoApiClient:
@@ -257,5 +258,6 @@ class AsekoApiClient:
             has_warning=has_warning,
             brand_name=brand_name,
             status_values=data.get("statusValues", {}),
+            status_messages=status_messages,
         )
 

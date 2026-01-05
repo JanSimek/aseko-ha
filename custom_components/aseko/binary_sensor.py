@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -17,7 +18,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import AsekoUnit
-from .const import DOMAIN
+from .const import DOMAIN, STATUS_MESSAGE_TRANSLATIONS
 from .coordinator import AsekoDataUpdateCoordinator
 
 
@@ -67,6 +68,34 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[AsekoBinarySensorEntityDescription, ...] = (
         device_class=BinarySensorDeviceClass.HEAT,
         value_fn=lambda unit: _parse_bool_status(unit, "heatingRunning"),
         available_fn=lambda unit: "heatingRunning" in unit.status_values,
+    ),
+    AsekoBinarySensorEntityDescription(
+        key="electrolyzer_running",
+        translation_key="electrolyzer_running",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda unit: _parse_bool_status(unit, "electrolyzerRunning"),
+        available_fn=lambda unit: "electrolyzerRunning" in unit.status_values,
+    ),
+    AsekoBinarySensorEntityDescription(
+        key="solar_running",
+        translation_key="solar_running",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda unit: _parse_bool_status(unit, "solarRunning"),
+        available_fn=lambda unit: "solarRunning" in unit.status_values,
+    ),
+    AsekoBinarySensorEntityDescription(
+        key="filtration_running",
+        translation_key="filtration_running",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda unit: _parse_bool_status(unit, "filtrationRunning"),
+        available_fn=lambda unit: "filtrationRunning" in unit.status_values,
+    ),
+    AsekoBinarySensorEntityDescription(
+        key="water_filling_running",
+        translation_key="water_filling_running",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda unit: _parse_bool_status(unit, "waterFillingRunning"),
+        available_fn=lambda unit: "waterFillingRunning" in unit.status_values,
     ),
 )
 
@@ -155,3 +184,34 @@ class AsekoBinarySensorEntity(
         if not super().available or self._unit is None:
             return False
         return self.entity_description.available_fn(self._unit)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Return extra state attributes for the warning sensor."""
+        if self.entity_description.key != "has_warning":
+            return None
+        if not self._unit or not self._unit.status_messages:
+            return None
+
+        error_msgs = [
+            m for m in self._unit.status_messages
+            if m.get("severity") in ("ERROR", "WARNING")
+        ]
+
+        if not error_msgs:
+            return None
+
+        return {
+            "error_types": ",".join(m.get("type", "") for m in error_msgs),
+            "errors": [
+                {
+                    "type": m.get("type"),
+                    "severity": m.get("severity"),
+                    "message": STATUS_MESSAGE_TRANSLATIONS.get(
+                        m.get("type", ""), m.get("message")
+                    ),
+                    "detail": m.get("detail"),
+                }
+                for m in error_msgs
+            ],
+        }
