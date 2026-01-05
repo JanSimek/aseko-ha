@@ -242,41 +242,20 @@ class AsekoApiClient:
             secondary = brand_data.get("secondary", "")
             brand_name = f"{primary} {secondary}".strip() or None
 
+        # Derive has_warning from statusMessages (API doesn't have hasWarning field)
+        status_messages = data.get("statusMessages", [])
+        has_warning = any(
+            msg.get("severity") in ("ERROR", "WARNING")
+            for msg in status_messages
+        )
+
         return AsekoUnit(
             serial_number=data["serialNumber"],
             name=data.get("name"),
             note=data.get("note"),
             online=data.get("online", False),
-            has_warning=data.get("hasWarning", False),
+            has_warning=has_warning,
             brand_name=brand_name,
-            status_values=self._parse_status_values(data.get("statusValues", {})),
+            status_values=data.get("statusValues", {}),
         )
 
-    def _parse_status_values(self, data: dict[str, Any]) -> dict[str, Any]:
-        """Parse status values from API response into a flat dictionary.
-
-        Args:
-            data: Raw statusValues object from API
-
-        Returns:
-            Dictionary mapping status type to value
-        """
-        result: dict[str, Any] = {}
-
-        for section in ("primary", "secondary"):
-            for item in data.get(section, []):
-                status_type = item.get("type")
-                if not status_type:
-                    continue
-
-                center = item.get("center", {})
-                if "value" in center:
-                    result[status_type] = center["value"]
-                elif "configuration" in center:
-                    result[status_type] = {
-                        "period": center["configuration"].get("period"),
-                        "name": center["configuration"].get("name"),
-                        "is_next": center.get("isNext", False),
-                    }
-
-        return result

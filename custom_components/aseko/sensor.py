@@ -60,7 +60,7 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
     AsekoSensorEntityDescription(
         key="water_temperature",
         translation_key="water_temperature",
-        status_key="WATER_TEMPERATURE",
+        status_key="waterTemperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
@@ -69,7 +69,7 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
     AsekoSensorEntityDescription(
         key="air_temperature",
         translation_key="air_temperature",
-        status_key="AIR_TEMPERATURE",
+        status_key="airTemperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
@@ -78,7 +78,7 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
     AsekoSensorEntityDescription(
         key="ph",
         translation_key="ph",
-        status_key="PH",
+        status_key="ph",
         device_class=SensorDeviceClass.PH,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_parse_float,
@@ -86,7 +86,7 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
     AsekoSensorEntityDescription(
         key="redox",
         translation_key="redox",
-        status_key="REDOX",
+        status_key="redox",
         device_class=SensorDeviceClass.VOLTAGE,
         native_unit_of_measurement=UnitOfElectricPotential.MILLIVOLT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -95,7 +95,7 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
     AsekoSensorEntityDescription(
         key="cl_free",
         translation_key="cl_free",
-        status_key="CL_FREE",
+        status_key="clFree",
         native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_parse_float,
@@ -103,7 +103,7 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
     AsekoSensorEntityDescription(
         key="salinity",
         translation_key="salinity",
-        status_key="SALINITY",
+        status_key="salinity",
         native_unit_of_measurement="g/L",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_parse_float,
@@ -111,7 +111,7 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
     AsekoSensorEntityDescription(
         key="electrolyzer",
         translation_key="electrolyzer",
-        status_key="ELECTROLYZER",
+        status_key="electrolyzer",
         native_unit_of_measurement="%",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_parse_int,
@@ -119,7 +119,7 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
     AsekoSensorEntityDescription(
         key="dose",
         translation_key="dose",
-        status_key="DOSE",
+        status_key="dose",
         native_unit_of_measurement="%",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_parse_int,

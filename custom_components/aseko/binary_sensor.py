@@ -58,15 +58,15 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[AsekoBinarySensorEntityDescription, ...] = (
         key="water_flow_to_probes",
         translation_key="water_flow_to_probes",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda unit: _parse_bool_status(unit, "WATER_FLOW_TO_PROBES"),
-        available_fn=lambda unit: "WATER_FLOW_TO_PROBES" in unit.status_values,
+        value_fn=lambda unit: _parse_bool_status(unit, "waterFlowToProbes"),
+        available_fn=lambda unit: "waterFlowToProbes" in unit.status_values,
     ),
     AsekoBinarySensorEntityDescription(
         key="heating",
         translation_key="heating",
         device_class=BinarySensorDeviceClass.HEAT,
-        value_fn=lambda unit: _parse_bool_status(unit, "HEATING"),
-        available_fn=lambda unit: "HEATING" in unit.status_values,
+        value_fn=lambda unit: _parse_bool_status(unit, "heatingRunning"),
+        available_fn=lambda unit: "heatingRunning" in unit.status_values,
     ),
 )
 
