@@ -19,6 +19,7 @@
     "error": {
       "cannot_connect": "Failed to connect to Aseko API",
       "invalid_auth": "Invalid API key",
+      "terms_not_accepted": "Aseko's terms of service have not been accepted. Accept them at https://account.aseko.cloud and then try again - a new API key will not help.",
       "account_mismatch": "This API key belongs to a different account",
       "unknown": "Unexpected error"
     },

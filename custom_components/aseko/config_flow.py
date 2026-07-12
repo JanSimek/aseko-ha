@@ -12,7 +12,12 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import AsekoApiClient, AsekoAuthError, AsekoApiError
+from .api import (
+    AsekoApiClient,
+    AsekoAuthError,
+    AsekoApiError,
+    AsekoTermsNotAcceptedError,
+)
 from .const import DOMAIN, CONF_API_KEY
 
 _LOGGER = logging.getLogger(__name__)
@@ -70,6 +75,11 @@ class AsekoConfigFlow(ConfigFlow, domain=DOMAIN):
 
             return unique_id, errors
 
+        except AsekoTermsNotAcceptedError:
+            # Must precede AsekoApiError - a new key will not fix this, so the
+            # user needs to be sent to the account portal rather than told the
+            # key is invalid.
+            errors["base"] = "terms_not_accepted"
         except AsekoAuthError:
             errors["base"] = "invalid_auth"
         except AsekoApiError:
