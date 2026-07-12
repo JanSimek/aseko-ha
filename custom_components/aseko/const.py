@@ -5,10 +5,15 @@ from typing import Final
 DOMAIN: Final = "aseko"
 
 API_BASE_URL: Final = "https://api.aseko.cloud/api/v1"
+ACCOUNT_PORTAL_URL: Final = "https://account.aseko.cloud"
 CLIENT_NAME: Final = "HomeAssistant-Aseko"
 CLIENT_VERSION: Final = "1.0.0"
 
 CONF_API_KEY: Final = "api_key"
+
+# Value of the "errorType" field the API returns with a 403 when the account
+# has not accepted the current terms of service.
+ERROR_TYPE_TOS_NOT_ACCEPTED: Final = "TOS_NOT_ACCEPTED"
 
 DEFAULT_SCAN_INTERVAL: Final = 60  # seconds
 

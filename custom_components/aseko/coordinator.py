@@ -7,11 +7,17 @@ import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import AsekoApiClient, AsekoUnit, AsekoApiError, AsekoAuthError
-from .const import DOMAIN, DEFAULT_SCAN_INTERVAL
+from .api import (
+    AsekoApiClient,
+    AsekoUnit,
+    AsekoApiError,
+    AsekoAuthError,
+    AsekoTermsNotAcceptedError,
+)
+from .const import ACCOUNT_PORTAL_URL, DOMAIN, DEFAULT_SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,12 +56,20 @@ class AsekoDataUpdateCoordinator(DataUpdateCoordinator[dict[str, AsekoUnit]]):
             Dictionary mapping serial numbers to AsekoUnit objects
 
         Raises:
+            ConfigEntryError: If the account has not accepted the terms of service
             ConfigEntryAuthFailed: If authentication fails (triggers reauth)
             UpdateFailed: If data fetch fails
         """
         try:
             units = await self.client.get_units()
             return {unit.serial_number: unit for unit in units}
+        except AsekoTermsNotAcceptedError as err:
+            # Not ConfigEntryAuthFailed: reauth would ask for another API key, and
+            # every key is rejected until the terms are accepted in the portal.
+            raise ConfigEntryError(
+                "Aseko's terms of service have not been accepted. Accept them at "
+                f"{ACCOUNT_PORTAL_URL} and then reload this integration."
+            ) from err
         except AsekoAuthError as err:
             # Trigger reauth flow
             raise ConfigEntryAuthFailed(f"Authentication failed: {err}") from err

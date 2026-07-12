@@ -7,9 +7,14 @@ from dataclasses import dataclass
 import logging
 from typing import Any
 
-from aiohttp import ClientSession, ClientResponseError
+from aiohttp import ClientResponse, ClientSession, ClientResponseError
 
-from .const import API_BASE_URL, CLIENT_NAME, CLIENT_VERSION
+from .const import (
+    API_BASE_URL,
+    CLIENT_NAME,
+    CLIENT_VERSION,
+    ERROR_TYPE_TOS_NOT_ACCEPTED,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,6 +25,15 @@ class AsekoApiError(Exception):
 
 class AsekoAuthError(AsekoApiError):
     """Exception for authentication errors."""
+
+
+class AsekoTermsNotAcceptedError(AsekoApiError):
+    """Exception for an account that has not accepted the terms of service.
+
+    The API answers every request with 403 TOS_NOT_ACCEPTED until the terms are
+    accepted in the Aseko account portal. Deliberately not an AsekoAuthError:
+    the key is valid, so issuing a new one does not clear this.
+    """
 
 
 class AsekoConnectionError(AsekoApiError):
@@ -66,6 +80,15 @@ class AsekoApiClient:
             "Accept": "application/json",
         }
 
+    @staticmethod
+    async def _error_type(response: ClientResponse) -> str | None:
+        """Return the "errorType" the API sent with an error response, if any."""
+        try:
+            data = await response.json(content_type=None)
+        except (ValueError, ClientResponseError):
+            return None
+        return data.get("errorType") if isinstance(data, dict) else None
+
     async def _request(
         self,
         method: str,
@@ -83,6 +106,7 @@ class AsekoApiClient:
             JSON response as dictionary
 
         Raises:
+            AsekoTermsNotAcceptedError: If the account has not accepted the terms
             AsekoAuthError: If API key is invalid (401/403)
             AsekoNotFoundError: If resource not found (404)
             AsekoConnectionError: For connection errors
@@ -95,6 +119,10 @@ class AsekoApiClient:
                 method, url, headers=self._headers(), **kwargs
             ) as response:
                 if response.status in (401, 403):
+                    if await self._error_type(response) == ERROR_TYPE_TOS_NOT_ACCEPTED:
+                        raise AsekoTermsNotAcceptedError(
+                            "Aseko terms of service have not been accepted"
+                        )
                     raise AsekoAuthError("Invalid or expired API key")
                 if response.status == 404:
                     raise AsekoNotFoundError(f"Resource not found: {endpoint}")
@@ -167,6 +195,7 @@ class AsekoApiClient:
 
         Raises:
             AsekoAuthError: If authentication fails (fatal, bubbles up)
+            AsekoTermsNotAcceptedError: If the terms are not accepted (fatal)
             AsekoApiError: For API errors or if fetching units fails
         """
         all_serial_numbers = await self.get_unit_serials()
@@ -185,8 +214,8 @@ class AsekoApiClient:
         not_found_count = 0
 
         for serial_number, result in zip(all_serial_numbers, results):
-            if isinstance(result, AsekoAuthError):
-                # Auth errors are fatal - bubble up immediately
+            if isinstance(result, (AsekoAuthError, AsekoTermsNotAcceptedError)):
+                # Auth and terms-of-service errors are fatal - bubble up immediately
                 raise result
             if isinstance(result, AsekoNotFoundError):
                 _LOGGER.debug("Unit %s not found, skipping", serial_number)
@@ -260,4 +289,3 @@ class AsekoApiClient:
             status_values=data.get("statusValues", {}),
             status_messages=status_messages,
         )
-

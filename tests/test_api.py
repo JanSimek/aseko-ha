@@ -8,6 +8,7 @@ from custom_components.aseko.api import (
     AsekoApiError,
     AsekoAuthError,
     AsekoNotFoundError,
+    AsekoTermsNotAcceptedError,
 )
 
 
@@ -21,6 +22,78 @@ def mock_session():
 def api_client(mock_session):
     """Create an API client with mock session."""
     return AsekoApiClient(mock_session, "test-api-key")
+
+
+def client_for_response(status, body):
+    """Create an API client whose session returns a single canned response.
+
+    Args:
+        status: HTTP status code to return
+        body: Parsed JSON body, or an exception to raise when parsing it
+    """
+    response = MagicMock()
+    response.status = status
+    if isinstance(body, Exception):
+        response.json = AsyncMock(side_effect=body)
+    else:
+        response.json = AsyncMock(return_value=body)
+
+    context = MagicMock()
+    context.__aenter__ = AsyncMock(return_value=response)
+    context.__aexit__ = AsyncMock(return_value=False)
+
+    session = MagicMock()
+    session.request = MagicMock(return_value=context)
+
+    return AsekoApiClient(session, "test-api-key")
+
+
+class TestErrorResponses:
+    """Tests for how HTTP error responses map to exceptions."""
+
+    async def test_tos_not_accepted_raises_terms_error(self):
+        """Test that a 403 TOS_NOT_ACCEPTED is not reported as a bad API key."""
+        client = client_for_response(
+            403,
+            {
+                "error": "Terms of services are not accepted.",
+                "errorType": "TOS_NOT_ACCEPTED",
+                "statusCode": 403,
+            },
+        )
+
+        with pytest.raises(AsekoTermsNotAcceptedError):
+            await client.validate_api_key()
+
+    async def test_terms_error_is_not_an_auth_error(self):
+        """Test that the terms error does not trigger auth handling (reauth)."""
+        assert not issubclass(AsekoTermsNotAcceptedError, AsekoAuthError)
+        assert issubclass(AsekoTermsNotAcceptedError, AsekoApiError)
+
+    async def test_other_403_still_raises_auth_error(self):
+        """Test that a 403 for any other reason is still an auth error."""
+        client = client_for_response(
+            403, {"error": "Forbidden", "errorType": "FORBIDDEN", "statusCode": 403}
+        )
+
+        with pytest.raises(AsekoAuthError):
+            await client.validate_api_key()
+
+    async def test_401_raises_auth_error(self):
+        """Test that a missing or invalid key is still an auth error."""
+        client = client_for_response(
+            401, {"error": "The API key is missing.", "errorType": "API_KEY_MISSING"}
+        )
+
+        with pytest.raises(AsekoAuthError):
+            await client.validate_api_key()
+
+    async def test_unparsable_error_body_falls_back_to_auth_error(self):
+        """Test that a non-JSON error body does not crash the client."""
+        client = client_for_response(403, ValueError("not json"))
+
+        with pytest.raises(AsekoAuthError):
+            await client.validate_api_key()
 
 
 class TestGetUnitSerials:
@@ -59,6 +132,22 @@ class TestGetUnits:
                 ]
 
                 with pytest.raises(AsekoAuthError, match="Token expired"):
+                    await api_client.get_units()
+
+    async def test_terms_error_bubbles_up(self, api_client):
+        """Test that AsekoTermsNotAcceptedError is fatal and is not swallowed."""
+        with patch.object(api_client, "get_unit_serials") as mock_serials:
+            mock_serials.return_value = ["UNIT1", "UNIT2"]
+
+            with patch.object(api_client, "get_unit") as mock_get_unit:
+                mock_get_unit.side_effect = [
+                    MagicMock(serial_number="UNIT1"),
+                    AsekoTermsNotAcceptedError("Terms not accepted"),
+                ]
+
+                with pytest.raises(
+                    AsekoTermsNotAcceptedError, match="Terms not accepted"
+                ):
                     await api_client.get_units()
 
     async def test_all_404_raises_error(self, api_client):
