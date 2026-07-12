@@ -1,14 +1,10 @@
 """Tests for the Aseko config flow."""
 
-from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
-from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResultType
 
-from custom_components.aseko.config_flow import AsekoConfigFlow, _stable_hash
-from custom_components.aseko.const import DOMAIN, CONF_API_KEY
+from custom_components.aseko.config_flow import _stable_hash
 
 
 class TestStableHash:
@@ -32,20 +28,23 @@ class TestStableHash:
         assert len(result) == 12
 
 
+@pytest.mark.skip(reason="hass fixture needs pytest-homeassistant-custom-component")
 class TestReauthAccountMismatch:
     """Tests for reauth account mismatch handling."""
 
     async def test_reauth_same_account_succeeds(self, hass: HomeAssistant):
-        """Test that reauth with same account succeeds."""
-        # This would require full Home Assistant test infrastructure
-        # Placeholder for integration test
-        pass
+        """Test that reauth with same account succeeds.
+
+        This would require full Home Assistant test infrastructure.
+        Placeholder for integration test.
+        """
 
     async def test_reauth_different_account_fails(self, hass: HomeAssistant):
-        """Test that reauth with different account shows error."""
-        # This would require full Home Assistant test infrastructure
-        # Placeholder for integration test
-        pass
+        """Test that reauth with different account shows error.
+
+        This would require full Home Assistant test infrastructure.
+        Placeholder for integration test.
+        """
 
 
 class TestUniqueIdStability:

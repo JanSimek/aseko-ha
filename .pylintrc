@@ -1,0 +1,23 @@
+[MASTER]
+# Use multiple processes to speed up Pylint
+jobs=1
+
+[MESSAGES CONTROL]
+# Disable checks that are false positives when external dependencies aren't installed
+disable=import-error,
+        # Disable unexpected-keyword-arg - false positive when types can't be resolved
+        unexpected-keyword-arg,
+        # Disable pytest fixture redefinition warnings (standard pytest pattern)
+        redefined-outer-name,
+        # Disable too-few-public-methods for test helper classes
+        too-few-public-methods,
+        # Disable duplicate-code (intentional similar patterns in sensor/binary_sensor)
+        duplicate-code,
+        # Allow broad exception catching in API client error handling
+        broad-exception-caught,
+        # Allow unused arguments for interface compatibility
+        unused-argument
+
+[DESIGN]
+# Allow more instance attributes for dataclasses
+max-attributes=10

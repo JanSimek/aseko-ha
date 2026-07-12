@@ -289,4 +289,3 @@ class AsekoApiClient:
             status_values=data.get("statusValues", {}),
             status_messages=status_messages,
         )
-
