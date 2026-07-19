@@ -47,8 +47,8 @@ class TestAsekoFiltrationPeriodSensorEntity:
         entity = _make_entity(unit)
         assert entity.native_value == "nonstop"
 
-    def test_upcoming_period_returns_next_label(self):
-        """When isNext is True, native_value should start with 'next:'."""
+    def test_upcoming_period_returns_next(self):
+        """When isNext is True, native_value should be 'next'."""
         unit = _make_unit(
             {
                 "upcomingFiltrationPeriod": {
@@ -60,10 +60,10 @@ class TestAsekoFiltrationPeriodSensorEntity:
             }
         )
         entity = _make_entity(unit)
-        assert entity.native_value == "next: 10:00\u201312:00"
+        assert entity.native_value == "next"
 
-    def test_running_period_returns_running_label(self):
-        """When isNext is False (currently running), native_value should start with 'running:'."""
+    def test_running_period_returns_running(self):
+        """When isNext is False (currently running), native_value should be 'running'."""
         unit = _make_unit(
             {
                 "upcomingFiltrationPeriod": {
@@ -75,7 +75,30 @@ class TestAsekoFiltrationPeriodSensorEntity:
             }
         )
         entity = _make_entity(unit)
-        assert entity.native_value == "running: 08:00\u201310:00"
+        assert entity.native_value == "running"
+
+    def test_period_without_times_returns_none(self):
+        """A period dict lacking start/end (and not nonstop) yields None."""
+        unit = _make_unit(
+            {"upcomingFiltrationPeriod": {"isNonstop": False, "isNext": True}}
+        )
+        entity = _make_entity(unit)
+        assert entity.native_value is None
+
+    def test_native_value_is_within_declared_options(self):
+        """Any non-None state must be one of the declared ENUM options."""
+        unit = _make_unit(
+            {
+                "upcomingFiltrationPeriod": {
+                    "isNonstop": False,
+                    "isNext": True,
+                    "start": "10:00",
+                    "end": "12:00",
+                }
+            }
+        )
+        entity = _make_entity(unit)
+        assert entity.native_value in entity.options
 
     def test_missing_period_returns_none(self):
         """When upcomingFiltrationPeriod is absent, native_value should be None."""

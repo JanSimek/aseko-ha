@@ -100,7 +100,12 @@
         "name": "Water level state"
       },
       "upcoming_filtration_period": {
-        "name": "Upcoming filtration period"
+        "name": "Upcoming filtration period",
+        "state": {
+          "nonstop": "Nonstop",
+          "next": "Next",
+          "running": "Running"
+        }
       }
     },
     "binary_sensor": {

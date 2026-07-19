@@ -10,6 +10,7 @@ A Home Assistant custom integration for Aseko pool monitoring devices using the 
 - Monitor salinity and water level
 - Monitor electrolyzer, filtration, solar, and heating status
 - Monitor filter pressure and flow speed
+- Monitor the upcoming/current filtration period, with start/end times as attributes
 - Binary sensors for equipment running states
 - Warning sensor with detailed error type attributes for automations
 
@@ -85,6 +86,16 @@ This integration supports Aseko ASIN AQUA and ASIN Pool devices connected to the
 | Electrolyzer direction | Electrolyzer polarity | LEFT, RIGHT, WAITING |
 | Pool flow | Pool water flow type | OVERFLOW, BOTTOM |
 | Water level state | Water level status | OK, FILLING, LOW, HIGH |
+| Upcoming filtration period | Next or current filtration schedule | nonstop, next, running |
+
+The **Upcoming filtration period** sensor exposes the schedule as attributes:
+
+| Attribute | Description |
+|-----------|-------------|
+| `is_nonstop` | Whether filtration runs without interruption |
+| `is_next` | Whether the period is upcoming (`true`) or currently running (`false`) |
+| `start` | Period start time |
+| `end` | Period end time |
 
 ## Binary Sensors
 
