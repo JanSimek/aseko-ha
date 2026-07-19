@@ -254,30 +254,37 @@ async def async_setup_entry(
     """Set up Aseko sensors based on a config entry."""
     coordinator: AsekoDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    # Track which units we've already created entities for
-    known_units: set[str] = set()
+    # Track the unique IDs we've already created entities for, keyed per
+    # status value rather than per unit — a status key that only shows up in a
+    # later update still gets its sensor created.
+    known_entities: set[str] = set()
 
     @callback
     def _async_add_new_entities() -> None:
-        """Add entities for newly discovered units."""
-        new_entities: list[AsekoSensorEntity] = []
+        """Add entities for newly discovered units and status values."""
+        new_entities: list[SensorEntity] = []
 
         for serial_number, unit in coordinator.data.items():
-            if serial_number in known_units:
-                continue
-
             for description in SENSOR_DESCRIPTIONS:
-                if description.status_key in unit.status_values:
+                unique_id = f"{serial_number}_{description.key}"
+                if (
+                    description.status_key in unit.status_values
+                    and unique_id not in known_entities
+                ):
+                    known_entities.add(unique_id)
                     new_entities.append(
                         AsekoSensorEntity(coordinator, unit, description)
                     )
 
-            if "upcomingFiltrationPeriod" in unit.status_values:
+            unique_id = f"{serial_number}_upcoming_filtration_period"
+            if (
+                "upcomingFiltrationPeriod" in unit.status_values
+                and unique_id not in known_entities
+            ):
+                known_entities.add(unique_id)
                 new_entities.append(
                     AsekoFiltrationPeriodSensorEntity(coordinator, unit)
                 )
-
-            known_units.add(serial_number)
 
         if new_entities:
             async_add_entities(new_entities)
@@ -291,23 +298,23 @@ async def async_setup_entry(
     )
 
 
-class AsekoSensorEntity(CoordinatorEntity[AsekoDataUpdateCoordinator], SensorEntity):
-    """Representation of an Aseko sensor."""
+class _AsekoUnitEntity(CoordinatorEntity[AsekoDataUpdateCoordinator], SensorEntity):
+    """Base for entities bound to a single Aseko unit.
 
-    entity_description: AsekoSensorEntityDescription
+    Holds the shared device info, unit lookup and availability logic so the
+    concrete sensors only add their own value handling.
+    """
+
     _attr_has_entity_name = True
 
     def __init__(
         self,
         coordinator: AsekoDataUpdateCoordinator,
         unit: AsekoUnit,
-        description: AsekoSensorEntityDescription,
     ) -> None:
-        """Initialize the sensor."""
+        """Initialize the entity and its device info."""
         super().__init__(coordinator)
-        self.entity_description = description
         self._serial_number = unit.serial_number
-        self._attr_unique_id = f"{unit.serial_number}_{description.key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, unit.serial_number)},
             name=unit.name or f"Aseko {unit.serial_number}",
@@ -317,8 +324,30 @@ class AsekoSensorEntity(CoordinatorEntity[AsekoDataUpdateCoordinator], SensorEnt
 
     @property
     def _unit(self) -> AsekoUnit | None:
-        """Return the unit data."""
+        """Return the current data for this unit."""
         return self.coordinator.data.get(self._serial_number)
+
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return super().available and self._unit is not None
+
+
+class AsekoSensorEntity(_AsekoUnitEntity):
+    """Representation of an Aseko sensor."""
+
+    entity_description: AsekoSensorEntityDescription
+
+    def __init__(
+        self,
+        coordinator: AsekoDataUpdateCoordinator,
+        unit: AsekoUnit,
+        description: AsekoSensorEntityDescription,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, unit)
+        self.entity_description = description
+        self._attr_unique_id = f"{unit.serial_number}_{description.key}"
 
     @property
     def native_value(self) -> Any:
@@ -335,19 +364,18 @@ class AsekoSensorEntity(CoordinatorEntity[AsekoDataUpdateCoordinator], SensorEnt
 
         return raw_value
 
-    @property
-    def available(self) -> bool:
-        """Return True if entity is available."""
-        return super().available and self._unit is not None
 
+class AsekoFiltrationPeriodSensorEntity(_AsekoUnitEntity):
+    """Sensor representing the upcoming filtration period.
 
-class AsekoFiltrationPeriodSensorEntity(
-    CoordinatorEntity[AsekoDataUpdateCoordinator], SensorEntity
-):
-    """Sensor representing the upcoming filtration period."""
+    The state is the kind of period ("nonstop", "next" or "running"); the
+    concrete start/end times are exposed as attributes so the state stays a
+    stable, translatable enum instead of a formatted string.
+    """
 
-    _attr_has_entity_name = True
     _attr_translation_key = "upcoming_filtration_period"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ["nonstop", "next", "running"]
 
     def __init__(
         self,
@@ -355,45 +383,37 @@ class AsekoFiltrationPeriodSensorEntity(
         unit: AsekoUnit,
     ) -> None:
         """Initialize the sensor."""
-        super().__init__(coordinator)
-        self._serial_number = unit.serial_number
+        super().__init__(coordinator, unit)
         self._attr_unique_id = f"{unit.serial_number}_upcoming_filtration_period"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, unit.serial_number)},
-            name=unit.name or f"Aseko {unit.serial_number}",
-            manufacturer="Aseko",
-            model=unit.brand_name,
-        )
 
-    @property
-    def _unit(self) -> AsekoUnit | None:
-        """Return the unit data."""
-        return self.coordinator.data.get(self._serial_number)
-
-    @property
-    def native_value(self) -> str | None:
-        """Return human-readable filtration period state."""
+    def _period(self) -> dict[str, Any] | None:
+        """Return the upcoming filtration period dict, if present and non-empty."""
         if not self._unit:
             return None
         period = self._unit.status_values.get("upcomingFiltrationPeriod")
-        if not period or not isinstance(period, dict):
+        return period if isinstance(period, dict) and period else None
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the kind of the upcoming filtration period.
+
+        One of "nonstop", "next" (a future period is scheduled) or "running"
+        (a period is currently active), or None when unknown.
+        """
+        period = self._period()
+        if period is None:
             return None
         if period.get("isNonstop"):
             return "nonstop"
-        start = period.get("start")
-        end = period.get("end")
-        if start and end:
-            prefix = "next" if period.get("isNext") else "running"
-            return f"{prefix}: {start}\u2013{end}"
+        if period.get("start") and period.get("end"):
+            return "next" if period.get("isNext") else "running"
         return None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
         """Return detailed filtration period attributes."""
-        if not self._unit:
-            return None
-        period = self._unit.status_values.get("upcomingFiltrationPeriod")
-        if not period or not isinstance(period, dict):
+        period = self._period()
+        if period is None:
             return None
         return {
             "is_nonstop": period.get("isNonstop"),
@@ -401,8 +421,3 @@ class AsekoFiltrationPeriodSensorEntity(
             "start": period.get("start"),
             "end": period.get("end"),
         }
-
-    @property
-    def available(self) -> bool:
-        """Return True if entity is available."""
-        return super().available and self._unit is not None
