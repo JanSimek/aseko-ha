@@ -18,7 +18,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import AsekoUnit
-from .const import DOMAIN, STATUS_MESSAGE_TRANSLATIONS
+from .const import DOMAIN, STATUS_MESSAGE_TRANSLATIONS, STATUS_MESSAGE_TRANSLATIONS_CS
 from .coordinator import AsekoDataUpdateCoordinator
 
 
@@ -208,6 +208,9 @@ class AsekoBinarySensorEntity(
                     "type": m.get("type"),
                     "severity": m.get("severity"),
                     "message": STATUS_MESSAGE_TRANSLATIONS.get(
+                        m.get("type", ""), m.get("message")
+                    ),
+                    "message_cs": STATUS_MESSAGE_TRANSLATIONS_CS.get(
                         m.get("type", ""), m.get("message")
                     ),
                     "detail": m.get("detail"),

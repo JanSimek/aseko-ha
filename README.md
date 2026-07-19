@@ -117,7 +117,7 @@ When the Warning binary sensor is `on`, it exposes additional attributes for use
 | Attribute | Description |
 |-----------|-------------|
 | `error_types` | Comma-separated list of error type codes |
-| `errors` | List of error objects with `type`, `severity`, `message`, and `detail` |
+| `errors` | List of error objects with `type`, `severity`, `message` (English), `message_cs` (Czech), and `detail` |
 
 Example error types: `TOO_MANY_PH_DOSING_ATTEMPTS_WITHOUT_CHANGE`, `WATER_LEVEL_TOO_LOW`, `NO_WATER_FLOW_TO_PROBES`, etc.
 

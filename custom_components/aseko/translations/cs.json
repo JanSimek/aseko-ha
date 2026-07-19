@@ -1,0 +1,138 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Aseko Pool",
+        "description": "Zadejte API klíč Aseko. Získat jej můžete na https://account.aseko.cloud/profile/settings/api-keys",
+        "data": {
+          "api_key": "API klíč"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Znovu ověřit Aseko Pool",
+        "description": "Váš API klíč vypršel nebo je neplatný. Zadejte prosím nový API klíč.",
+        "data": {
+          "api_key": "API klíč"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nepodařilo se připojit k Aseko API",
+      "invalid_auth": "Neplatný API klíč",
+      "terms_not_accepted": "Nebyly přijaty podmínky služby Aseko. Přijměte je na https://account.aseko.cloud a poté to zkuste znovu – nový API klíč nepomůže.",
+      "account_mismatch": "Tento API klíč patří jinému účtu",
+      "unknown": "Neočekávaná chyba"
+    },
+    "abort": {
+      "already_configured": "Účet je již nakonfigurován",
+      "reauth_successful": "Opětovné ověření úspěšné"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "water_temperature": {
+        "name": "Teplota vody"
+      },
+      "air_temperature": {
+        "name": "Teplota vzduchu"
+      },
+      "ph": {
+        "name": "pH"
+      },
+      "redox": {
+        "name": "Redox"
+      },
+      "cl_free": {
+        "name": "Volný chlor"
+      },
+      "salinity": {
+        "name": "Salinita"
+      },
+      "electrolyzer": {
+        "name": "Elektrolyzér"
+      },
+      "dose": {
+        "name": "Dávka"
+      },
+      "cl_free_required": {
+        "name": "Požadovaný volný chlor"
+      },
+      "cl_bounded": {
+        "name": "Vázaný chlor"
+      },
+      "electrode_power": {
+        "name": "Výkon elektrody"
+      },
+      "filter_flow_speed": {
+        "name": "Rychlost průtoku filtru"
+      },
+      "filter_pressure": {
+        "name": "Tlak filtru"
+      },
+      "ph_required": {
+        "name": "Požadované pH"
+      },
+      "redox_required": {
+        "name": "Požadovaný redox"
+      },
+      "solar_temperature": {
+        "name": "Teplota solárního systému"
+      },
+      "water_level": {
+        "name": "Hladina vody"
+      },
+      "water_temperature_required": {
+        "name": "Požadovaná teplota vody"
+      },
+      "electrolyzer_direction": {
+        "name": "Směr elektrolyzéru"
+      },
+      "mode": {
+        "name": "Režim"
+      },
+      "filtration_speed": {
+        "name": "Rychlost filtrace"
+      },
+      "pool_flow": {
+        "name": "Průtok bazénu"
+      },
+      "water_level_state": {
+        "name": "Stav hladiny vody"
+      },
+      "upcoming_filtration_period": {
+        "name": "Nadcházející filtrační období",
+        "state": {
+          "nonstop": "Nepřetržitě",
+          "next": "Následující",
+          "running": "Probíhá"
+        }
+      }
+    },
+    "binary_sensor": {
+      "online": {
+        "name": "Online"
+      },
+      "has_warning": {
+        "name": "Varování"
+      },
+      "water_flow_to_probes": {
+        "name": "Průtok vody k sondám"
+      },
+      "heating": {
+        "name": "Topení"
+      },
+      "electrolyzer_running": {
+        "name": "Elektrolyzér v provozu"
+      },
+      "solar_running": {
+        "name": "Solár v provozu"
+      },
+      "filtration_running": {
+        "name": "Filtrace v provozu"
+      },
+      "water_filling_running": {
+        "name": "Doplňování vody"
+      }
+    }
+  }
+}
