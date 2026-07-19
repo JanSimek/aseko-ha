@@ -98,6 +98,9 @@
       },
       "water_level_state": {
         "name": "Water level state"
+      },
+      "upcoming_filtration_period": {
+        "name": "Upcoming filtration period"
       }
     },
     "binary_sensor": {

@@ -272,6 +272,11 @@ async def async_setup_entry(
                         AsekoSensorEntity(coordinator, unit, description)
                     )
 
+            if "upcomingFiltrationPeriod" in unit.status_values:
+                new_entities.append(
+                    AsekoFiltrationPeriodSensorEntity(coordinator, unit)
+                )
+
             known_units.add(serial_number)
 
         if new_entities:
@@ -329,6 +334,73 @@ class AsekoSensorEntity(CoordinatorEntity[AsekoDataUpdateCoordinator], SensorEnt
             return self.entity_description.value_fn(raw_value)
 
         return raw_value
+
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return super().available and self._unit is not None
+
+
+class AsekoFiltrationPeriodSensorEntity(
+    CoordinatorEntity[AsekoDataUpdateCoordinator], SensorEntity
+):
+    """Sensor representing the upcoming filtration period."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "upcoming_filtration_period"
+
+    def __init__(
+        self,
+        coordinator: AsekoDataUpdateCoordinator,
+        unit: AsekoUnit,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._serial_number = unit.serial_number
+        self._attr_unique_id = f"{unit.serial_number}_upcoming_filtration_period"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, unit.serial_number)},
+            name=unit.name or f"Aseko {unit.serial_number}",
+            manufacturer="Aseko",
+            model=unit.brand_name,
+        )
+
+    @property
+    def _unit(self) -> AsekoUnit | None:
+        """Return the unit data."""
+        return self.coordinator.data.get(self._serial_number)
+
+    @property
+    def native_value(self) -> str | None:
+        """Return human-readable filtration period state."""
+        if not self._unit:
+            return None
+        period = self._unit.status_values.get("upcomingFiltrationPeriod")
+        if not period or not isinstance(period, dict):
+            return None
+        if period.get("isNonstop"):
+            return "nonstop"
+        start = period.get("start")
+        end = period.get("end")
+        if start and end:
+            prefix = "next" if period.get("isNext") else "running"
+            return f"{prefix}: {start}\u2013{end}"
+        return None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Return detailed filtration period attributes."""
+        if not self._unit:
+            return None
+        period = self._unit.status_values.get("upcomingFiltrationPeriod")
+        if not period or not isinstance(period, dict):
+            return None
+        return {
+            "is_nonstop": period.get("isNonstop"),
+            "is_next": period.get("isNext"),
+            "start": period.get("start"),
+            "end": period.get("end"),
+        }
 
     @property
     def available(self) -> bool:
