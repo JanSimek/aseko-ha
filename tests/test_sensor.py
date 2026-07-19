@@ -1,7 +1,6 @@
 """Tests for the Aseko sensor platform."""
 
 from unittest.mock import MagicMock
-import pytest
 
 from custom_components.aseko.api import AsekoUnit
 from custom_components.aseko.sensor import AsekoFiltrationPeriodSensorEntity

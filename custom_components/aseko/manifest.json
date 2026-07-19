@@ -1,7 +1,7 @@
 {
   "domain": "aseko",
   "name": "Aseko Pool",
-  "codeowners": ["@jsimek"],
+  "codeowners": ["@JanSimek"],
   "config_flow": true,
   "documentation": "https://github.com/JanSimek/aseko-ha",
   "integration_type": "hub",
