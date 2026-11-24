@@ -15,10 +15,10 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    CONCENTRATION_PARTS_PER_MILLION,
     UnitOfElectricPotential,
     UnitOfLength,
     UnitOfPressure,
+    UnitOfRatio,
     UnitOfTemperature,
     UnitOfVolumeFlowRate,
 )
@@ -148,7 +148,7 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
         key="cl_free",
         translation_key="cl_free",
         status_key="clFree",
-        native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+        native_unit_of_measurement=UnitOfRatio.PARTS_PER_MILLION,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_parse_float,
     ),
@@ -181,7 +181,7 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
         key="cl_free_required",
         translation_key="cl_free_required",
         status_key="clFreeRequired",
-        native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+        native_unit_of_measurement=UnitOfRatio.PARTS_PER_MILLION,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_parse_float,
     ),
@@ -189,7 +189,7 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
         key="cl_bounded",
         translation_key="cl_bounded",
         status_key="clBounded",
-        native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+        native_unit_of_measurement=UnitOfRatio.PARTS_PER_MILLION,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_parse_float,
     ),
