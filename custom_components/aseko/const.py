@@ -17,6 +17,22 @@ ERROR_TYPE_TOS_NOT_ACCEPTED: Final = "TOS_NOT_ACCEPTED"
 
 DEFAULT_SCAN_INTERVAL: Final = 60  # seconds
 
+# Known values of the enum status sensors, lowercased. The API reports them in
+# upper case; the sensors lowercase them so each state can be translated (Home
+# Assistant translation keys must be lowercase).
+MODE_OPTIONS: Final = ["auto", "eco", "off", "on", "party", "winter"]
+FILTRATION_SPEED_OPTIONS: Final = ["boost", "high", "low", "medium", "off"]
+ELECTROLYZER_DIRECTION_OPTIONS: Final = ["left", "right", "waiting"]
+POOL_FLOW_OPTIONS: Final = ["overflow", "bottom"]
+WATER_LEVEL_STATE_OPTIONS: Final = ["ok", "filling", "low", "high"]
+
+# Status message severities that count as an active warning.
+ACTIVE_WARNING_SEVERITIES: Final = ("ERROR", "WARNING")
+
+# States of the warning reason sensor besides the lowercased message types.
+WARNING_REASON_NONE: Final = "none"
+WARNING_REASON_OTHER: Final = "other"
+
 # Translations for status message types from Aseko API
 # Used for extra_state_attributes on the warning binary sensor
 STATUS_MESSAGE_TRANSLATIONS: Final[dict[str, str]] = {
@@ -31,6 +47,7 @@ STATUS_MESSAGE_TRANSLATIONS: Final[dict[str, str]] = {
     "MAXIMUM_DISINFECTION_DOSE_EXCEEDED": "Maximum disinfection dose exceeded",
     "MAXIMUM_HOURLY_DISINFECTION_DOSE_EXCEEDED": "Maximum hourly disinfection dose exceeded",
     "MCU_COMMUNICATION_ERROR": "MCU communication error",
+    "NO_DOSING_OUTSIDE_TIME_FRAME": "No dosing outside time frame",
     "NO_FLOW_FROM_DOSING_UNIT": "No flow from dosing unit",
     "NO_WATER_FLOW_TO_PROBES": "No water flow to probes",
     "PH_TOO_LOW_FOR_ELECTROLYSIS": "pH too low for electrolysis",
@@ -69,6 +86,7 @@ STATUS_MESSAGE_TRANSLATIONS_CS: Final[dict[str, str]] = {
     "MAXIMUM_DISINFECTION_DOSE_EXCEEDED": "Překročena maximální dávka dezinfekce",
     "MAXIMUM_HOURLY_DISINFECTION_DOSE_EXCEEDED": "Překročena maximální hodinová dávka dezinfekce",
     "MCU_COMMUNICATION_ERROR": "Chyba komunikace MCU",
+    "NO_DOSING_OUTSIDE_TIME_FRAME": "Mimo časové okno se nedávkuje",
     "NO_FLOW_FROM_DOSING_UNIT": "Žádný průtok z dávkovací jednotky",
     "NO_WATER_FLOW_TO_PROBES": "Žádný průtok vody k sondám",
     "PH_TOO_LOW_FOR_ELECTROLYSIS": "pH příliš nízké pro elektrolýzu",

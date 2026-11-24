@@ -81,12 +81,24 @@ This integration supports Aseko ASIN AQUA and ASIN Pool devices connected to the
 
 | Sensor | Description | Values |
 |--------|-------------|--------|
-| Mode | Current operation mode | AUTO, ECO, OFF, ON, PARTY, WINTER |
-| Filtration speed | Current filtration speed | BOOST, HIGH, LOW, MEDIUM, OFF |
-| Electrolyzer direction | Electrolyzer polarity | LEFT, RIGHT, WAITING |
-| Pool flow | Pool water flow type | OVERFLOW, BOTTOM |
-| Water level state | Water level status | OK, FILLING, LOW, HIGH |
+| Mode | Current operation mode | auto, eco, off, on, party, winter |
+| Filtration speed | Current filtration speed | boost, high, low, medium, off |
+| Electrolyzer direction | Electrolyzer polarity | left, right, waiting |
+| Pool flow | Pool water flow type | overflow, bottom |
+| Water level state | Water level status | ok, filling, low, high |
+| Warning reason | Reason of the most severe active warning | none, a lowercased message type (e.g. water_level_too_low), other |
 | Upcoming filtration period | Next or current filtration schedule | nonstop, next, running |
+
+State values are lowercase and translated in the UI (English and Czech). The API
+reports them in upper case; versions before 1.2.0 passed them through unchanged,
+so automations comparing against e.g. `LOW` must now use `low`. A value the
+integration does not know yet shows as unknown and is logged once.
+
+The **Warning reason** sensor shows *why* the Warning binary sensor is on, so the
+reason appears in the dashboard and the logbook. When several warnings are
+active, errors win over warnings. Attributes: `type` (raw API code),
+`severity`, `message`, `detail` and `active_warnings` (count). An unknown message
+type gives the state `other`, with the raw code in `type`.
 
 The **Upcoming filtration period** sensor exposes the schedule as attributes:
 
@@ -133,7 +145,7 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.my_pool_water_level_state
-        to: "LOW"
+        to: "low"
     action:
       - service: notify.mobile_app
         data:
