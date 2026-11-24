@@ -190,13 +190,10 @@ class AsekoBinarySensorEntity(
         """Return extra state attributes for the warning sensor."""
         if self.entity_description.key != "has_warning":
             return None
-        if not self._unit or not self._unit.status_messages:
+        if not self._unit:
             return None
 
-        error_msgs = [
-            m for m in self._unit.status_messages
-            if m.get("severity") in ("ERROR", "WARNING")
-        ]
+        error_msgs = self._unit.active_warnings
 
         if not error_msgs:
             return None

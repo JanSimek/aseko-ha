@@ -85,19 +85,90 @@
         "name": "Water temperature required"
       },
       "electrolyzer_direction": {
-        "name": "Electrolyzer direction"
+        "name": "Electrolyzer direction",
+        "state": {
+          "left": "Left",
+          "right": "Right",
+          "waiting": "Waiting"
+        }
       },
       "mode": {
-        "name": "Mode"
+        "name": "Mode",
+        "state": {
+          "auto": "Auto",
+          "eco": "Eco",
+          "off": "Off",
+          "on": "On",
+          "party": "Party",
+          "winter": "Winter"
+        }
       },
       "filtration_speed": {
-        "name": "Filtration speed"
+        "name": "Filtration speed",
+        "state": {
+          "boost": "Boost",
+          "high": "High",
+          "low": "Low",
+          "medium": "Medium",
+          "off": "Off"
+        }
       },
       "pool_flow": {
-        "name": "Pool flow"
+        "name": "Pool flow",
+        "state": {
+          "overflow": "Overflow",
+          "bottom": "Bottom"
+        }
       },
       "water_level_state": {
-        "name": "Water level state"
+        "name": "Water level state",
+        "state": {
+          "ok": "OK",
+          "filling": "Filling",
+          "low": "Low",
+          "high": "High"
+        }
+      },
+      "warning_reason": {
+        "name": "Warning reason",
+        "state": {
+          "none": "No warning",
+          "auto_mode_filtration_intervals_wrong": "Auto mode filtration intervals incorrect",
+          "backwash_error": "Backwash error",
+          "backwash_running": "Backwash running",
+          "clock_memory_battery_low": "Clock memory battery low",
+          "cover_error_current": "Cover error - current issue",
+          "cover_error_pulses": "Cover error - pulse issue",
+          "electrolysis_on_too_many_days": "Electrolysis running too many days",
+          "heater_cooling_filtration": "Heater cooling filtration active",
+          "maximum_disinfection_dose_exceeded": "Maximum disinfection dose exceeded",
+          "maximum_hourly_disinfection_dose_exceeded": "Maximum hourly disinfection dose exceeded",
+          "mcu_communication_error": "MCU communication error",
+          "no_flow_from_dosing_unit": "No flow from dosing unit",
+          "no_water_flow_to_probes": "No water flow to probes",
+          "ph_too_low_for_electrolysis": "pH too low for electrolysis",
+          "ph_value_changing_too_rapidly": "pH value changing too rapidly",
+          "pool_cover_in_motion": "Pool cover in motion",
+          "pump_overheated": "Pump overheated",
+          "salt_high_temperature": "Salt system high temperature",
+          "solar_high_temperature": "Solar system high temperature",
+          "solar_no_temperature": "Solar system no temperature reading",
+          "start_by_ems": "Started by EMS",
+          "start_by_solar": "Started by solar",
+          "stopped_by_timer": "Stopped by timer",
+          "temp_superior_to_filtration": "Temperature superior to filtration",
+          "too_little_salt_per_hour": "Too little salt per hour",
+          "too_many_ph_dosing_attempts_without_change": "pH dosing failed - no change after 20 doses",
+          "too_much_salt_per_hour": "Too much salt per hour",
+          "unexpected_cover_operation_mode": "Unexpected cover operation mode",
+          "unit_offline": "Unit offline",
+          "vs_pump_type_not_set": "Variable speed pump type not set",
+          "water_level_too_high": "Water level too high",
+          "water_level_too_low": "Water level too low",
+          "water_refilling_time_exceeded": "Water refilling time exceeded",
+          "winter_mode_activated": "Winter mode activated",
+          "other": "Other warning"
+        }
       },
       "upcoming_filtration_period": {
         "name": "Upcoming filtration period",

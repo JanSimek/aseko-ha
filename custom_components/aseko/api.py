@@ -10,6 +10,7 @@ from typing import Any
 from aiohttp import ClientResponse, ClientSession, ClientResponseError
 
 from .const import (
+    ACTIVE_WARNING_SEVERITIES,
     API_BASE_URL,
     CLIENT_NAME,
     CLIENT_VERSION,
@@ -56,6 +57,14 @@ class AsekoUnit:
     brand_name: str | None
     status_values: dict[str, Any]
     status_messages: list[dict[str, Any]]
+
+    @property
+    def active_warnings(self) -> list[dict[str, Any]]:
+        """Return the status messages that are active warnings or errors."""
+        return [
+            msg for msg in self.status_messages
+            if msg.get("severity") in ACTIVE_WARNING_SEVERITIES
+        ]
 
 
 class AsekoApiClient:
@@ -275,7 +284,7 @@ class AsekoApiClient:
         # Derive has_warning from statusMessages (API doesn't have hasWarning field)
         status_messages = data.get("statusMessages", [])
         has_warning = any(
-            msg.get("severity") in ("ERROR", "WARNING")
+            msg.get("severity") in ACTIVE_WARNING_SEVERITIES
             for msg in status_messages
         )
 

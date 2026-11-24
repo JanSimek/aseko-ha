@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+import logging
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -27,8 +28,31 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import AsekoUnit
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    ELECTROLYZER_DIRECTION_OPTIONS,
+    FILTRATION_SPEED_OPTIONS,
+    MODE_OPTIONS,
+    POOL_FLOW_OPTIONS,
+    STATUS_MESSAGE_TRANSLATIONS,
+    WARNING_REASON_NONE,
+    WARNING_REASON_OTHER,
+    WATER_LEVEL_STATE_OPTIONS,
+)
 from .coordinator import AsekoDataUpdateCoordinator
+
+_LOGGER = logging.getLogger(__name__)
+
+# Unknown enum values already logged, so each is reported only once.
+_LOGGED_UNKNOWN_ENUM_VALUES: set[tuple[str, str]] = set()
+
+# States of the warning reason sensor: no warning, every known message type
+# (lowercased so it can be translated), or a message type we don't know yet.
+WARNING_REASON_OPTIONS: list[str] = [
+    WARNING_REASON_NONE,
+    *(message_type.lower() for message_type in STATUS_MESSAGE_TRANSLATIONS),
+    WARNING_REASON_OTHER,
+]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -47,6 +71,31 @@ def _parse_float(value: str) -> float | None:
         return float(value)
     except (ValueError, TypeError):
         return None
+
+
+def _enum_parser(status_key: str, options: list[str]) -> Callable[[str], str | None]:
+    """Return a parser mapping an upper-case API value to a lowercase option.
+
+    A value outside ``options`` maps to None (unknown state) instead of
+    raising, and is logged once so the option list can be extended.
+    """
+
+    def parse(value: str) -> str | None:
+        if not isinstance(value, str) or value in ("---", ""):
+            return None
+        option = value.lower()
+        if option in options:
+            return option
+        if (status_key, value) not in _LOGGED_UNKNOWN_ENUM_VALUES:
+            _LOGGED_UNKNOWN_ENUM_VALUES.add((status_key, value))
+            _LOGGER.warning(
+                "Unknown value %r for Aseko status %s; please report it",
+                value,
+                status_key,
+            )
+        return None
+
+    return parse
 
 
 def _parse_int(value: str) -> int | None:
@@ -218,30 +267,40 @@ SENSOR_DESCRIPTIONS: tuple[AsekoSensorEntityDescription, ...] = (
         translation_key="electrolyzer_direction",
         status_key="electrolyzerDirection",
         device_class=SensorDeviceClass.ENUM,
+        options=ELECTROLYZER_DIRECTION_OPTIONS,
+        value_fn=_enum_parser("electrolyzerDirection", ELECTROLYZER_DIRECTION_OPTIONS),
     ),
     AsekoSensorEntityDescription(
         key="mode",
         translation_key="mode",
         status_key="mode",
         device_class=SensorDeviceClass.ENUM,
+        options=MODE_OPTIONS,
+        value_fn=_enum_parser("mode", MODE_OPTIONS),
     ),
     AsekoSensorEntityDescription(
         key="filtration_speed",
         translation_key="filtration_speed",
         status_key="filtrationSpeed",
         device_class=SensorDeviceClass.ENUM,
+        options=FILTRATION_SPEED_OPTIONS,
+        value_fn=_enum_parser("filtrationSpeed", FILTRATION_SPEED_OPTIONS),
     ),
     AsekoSensorEntityDescription(
         key="pool_flow",
         translation_key="pool_flow",
         status_key="poolFlow",
         device_class=SensorDeviceClass.ENUM,
+        options=POOL_FLOW_OPTIONS,
+        value_fn=_enum_parser("poolFlow", POOL_FLOW_OPTIONS),
     ),
     AsekoSensorEntityDescription(
         key="water_level_state",
         translation_key="water_level_state",
         status_key="waterLevelState",
         device_class=SensorDeviceClass.ENUM,
+        options=WATER_LEVEL_STATE_OPTIONS,
+        value_fn=_enum_parser("waterLevelState", WATER_LEVEL_STATE_OPTIONS),
     ),
 )
 
@@ -275,6 +334,11 @@ async def async_setup_entry(
                     new_entities.append(
                         AsekoSensorEntity(coordinator, unit, description)
                     )
+
+            unique_id = f"{serial_number}_warning_reason"
+            if unique_id not in known_entities:
+                known_entities.add(unique_id)
+                new_entities.append(AsekoWarningReasonSensorEntity(coordinator, unit))
 
             unique_id = f"{serial_number}_upcoming_filtration_period"
             if (
@@ -420,4 +484,62 @@ class AsekoFiltrationPeriodSensorEntity(_AsekoUnitEntity):
             "is_next": period.get("isNext"),
             "start": period.get("start"),
             "end": period.get("end"),
+        }
+
+
+class AsekoWarningReasonSensorEntity(_AsekoUnitEntity):
+    """Sensor naming the reason of the current warning.
+
+    The Warning binary sensor only says that something is wrong. This sensor's
+    state is the message type of the most severe active warning, lowercased so
+    the frontend and logbook show it translated ("Water level too low"). It is
+    "none" when there is no warning and "other" for a type not known yet.
+    """
+
+    _attr_translation_key = "warning_reason"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = WARNING_REASON_OPTIONS
+
+    def __init__(
+        self,
+        coordinator: AsekoDataUpdateCoordinator,
+        unit: AsekoUnit,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, unit)
+        self._attr_unique_id = f"{unit.serial_number}_warning_reason"
+
+    def _primary_warning(self) -> dict[str, Any] | None:
+        """Return the most severe active warning (errors before warnings)."""
+        if not self._unit:
+            return None
+        warnings = self._unit.active_warnings
+        if not warnings:
+            return None
+        errors = [msg for msg in warnings if msg.get("severity") == "ERROR"]
+        return (errors or warnings)[0]
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the reason of the most severe active warning."""
+        if not self._unit:
+            return None
+        warning = self._primary_warning()
+        if warning is None:
+            return WARNING_REASON_NONE
+        reason = str(warning.get("type", "")).lower()
+        return reason if reason in self._attr_options else WARNING_REASON_OTHER
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Return details of the warning shown in the state."""
+        warning = self._primary_warning()
+        if warning is None:
+            return None
+        return {
+            "type": warning.get("type"),
+            "severity": warning.get("severity"),
+            "message": warning.get("message"),
+            "detail": warning.get("detail"),
+            "active_warnings": len(self._unit.active_warnings),
         }
