@@ -7,6 +7,11 @@ from unittest.mock import MagicMock
 import pytest
 
 from custom_components.aseko.api import AsekoUnit
+from custom_components.aseko.const import (
+    ACTIVE_WARNING_SEVERITIES,
+    STATUS_MESSAGE_TRANSLATIONS,
+    STATUS_MESSAGE_TRANSLATIONS_CS,
+)
 from custom_components.aseko.sensor import (
     SENSOR_DESCRIPTIONS,
     AsekoFiltrationPeriodSensorEntity,
@@ -291,3 +296,38 @@ def test_every_enum_state_is_translated(translation_file):
     for translation_key, options in expected.items():
         states = sensors[translation_key]["state"]
         assert set(states) == set(options), translation_key
+
+
+class TestMatchesApiSpec:
+    """Check the hard-coded value lists against the Aseko OpenAPI spec.
+
+    tests/fixtures/openapi_enums.json is an extract of the enums in the
+    official spec (https://api.aseko.cloud/api/v1/docs). When Aseko adds a
+    value, refresh the fixture and these tests point at what to extend.
+    """
+
+    SPEC = json.loads(
+        (Path(__file__).parent / "fixtures" / "openapi_enums.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    def test_enum_sensor_options_match_spec(self):
+        """Each enum sensor's options are exactly the spec's values, lowercased."""
+        spec_values = self.SPEC["StatusValues"]
+        assert {d.status_key for d in ENUM_DESCRIPTIONS} == set(spec_values)
+        for description in ENUM_DESCRIPTIONS:
+            expected = [v.lower() for v in spec_values[description.status_key]]
+            assert sorted(description.options) == sorted(expected), description.key
+
+    def test_every_message_type_is_translated(self):
+        """Every message type in the spec has an English and Czech text."""
+        spec_types = set(self.SPEC["StatusMessage"]["type"])
+        assert set(STATUS_MESSAGE_TRANSLATIONS) == spec_types
+        assert set(STATUS_MESSAGE_TRANSLATIONS_CS) == spec_types
+
+    def test_active_severities_exist_in_spec(self):
+        """The severities treated as warnings are real severities."""
+        assert set(ACTIVE_WARNING_SEVERITIES) <= set(
+            self.SPEC["StatusMessage"]["severity"]
+        )

@@ -144,6 +144,7 @@
           "maximum_disinfection_dose_exceeded": "Maximum disinfection dose exceeded",
           "maximum_hourly_disinfection_dose_exceeded": "Maximum hourly disinfection dose exceeded",
           "mcu_communication_error": "MCU communication error",
+          "no_dosing_outside_time_frame": "No dosing outside time frame",
           "no_flow_from_dosing_unit": "No flow from dosing unit",
           "no_water_flow_to_probes": "No water flow to probes",
           "ph_too_low_for_electrolysis": "pH too low for electrolysis",

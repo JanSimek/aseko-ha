@@ -1,0 +1,79 @@
+{
+  "_source": "https://api.aseko.cloud/api/v1/docs (components.schemas), extracted 2026-11-24",
+  "StatusValues": {
+    "electrolyzerDirection": [
+      "LEFT",
+      "RIGHT",
+      "WAITING"
+    ],
+    "mode": [
+      "AUTO",
+      "ECO",
+      "OFF",
+      "ON",
+      "PARTY",
+      "WINTER"
+    ],
+    "filtrationSpeed": [
+      "BOOST",
+      "HIGH",
+      "LOW",
+      "MEDIUM",
+      "OFF"
+    ],
+    "poolFlow": [
+      "OVERFLOW",
+      "BOTTOM"
+    ],
+    "waterLevelState": [
+      "OK",
+      "FILLING",
+      "LOW",
+      "HIGH"
+    ]
+  },
+  "StatusMessage": {
+    "type": [
+      "AUTO_MODE_FILTRATION_INTERVALS_WRONG",
+      "BACKWASH_ERROR",
+      "BACKWASH_RUNNING",
+      "CLOCK_MEMORY_BATTERY_LOW",
+      "COVER_ERROR_CURRENT",
+      "COVER_ERROR_PULSES",
+      "ELECTROLYSIS_ON_TOO_MANY_DAYS",
+      "HEATER_COOLING_FILTRATION",
+      "MAXIMUM_DISINFECTION_DOSE_EXCEEDED",
+      "MAXIMUM_HOURLY_DISINFECTION_DOSE_EXCEEDED",
+      "MCU_COMMUNICATION_ERROR",
+      "NO_DOSING_OUTSIDE_TIME_FRAME",
+      "NO_FLOW_FROM_DOSING_UNIT",
+      "NO_WATER_FLOW_TO_PROBES",
+      "PH_TOO_LOW_FOR_ELECTROLYSIS",
+      "PH_VALUE_CHANGING_TOO_RAPIDLY",
+      "POOL_COVER_IN_MOTION",
+      "PUMP_OVERHEATED",
+      "SALT_HIGH_TEMPERATURE",
+      "SOLAR_HIGH_TEMPERATURE",
+      "SOLAR_NO_TEMPERATURE",
+      "START_BY_EMS",
+      "START_BY_SOLAR",
+      "STOPPED_BY_TIMER",
+      "TEMP_SUPERIOR_TO_FILTRATION",
+      "TOO_LITTLE_SALT_PER_HOUR",
+      "TOO_MANY_PH_DOSING_ATTEMPTS_WITHOUT_CHANGE",
+      "TOO_MUCH_SALT_PER_HOUR",
+      "UNEXPECTED_COVER_OPERATION_MODE",
+      "UNIT_OFFLINE",
+      "VS_PUMP_TYPE_NOT_SET",
+      "WATER_LEVEL_TOO_HIGH",
+      "WATER_LEVEL_TOO_LOW",
+      "WATER_REFILLING_TIME_EXCEEDED",
+      "WINTER_MODE_ACTIVATED"
+    ],
+    "severity": [
+      "ERROR",
+      "INFO",
+      "WARNING"
+    ]
+  }
+}

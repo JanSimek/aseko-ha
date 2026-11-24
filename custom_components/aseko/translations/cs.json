@@ -144,6 +144,7 @@
           "maximum_disinfection_dose_exceeded": "Překročena maximální dávka dezinfekce",
           "maximum_hourly_disinfection_dose_exceeded": "Překročena maximální hodinová dávka dezinfekce",
           "mcu_communication_error": "Chyba komunikace MCU",
+          "no_dosing_outside_time_frame": "Mimo časové okno se nedávkuje",
           "no_flow_from_dosing_unit": "Žádný průtok z dávkovací jednotky",
           "no_water_flow_to_probes": "Žádný průtok vody k sondám",
           "ph_too_low_for_electrolysis": "pH příliš nízké pro elektrolýzu",
